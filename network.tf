@@ -12,7 +12,7 @@ resource "google_compute_subnetwork" "test_subnet" {
   project       = var.project_id
   ip_cidr_range = "10.0.0.0/24"
   region        = "us-east4"
-#   private_ip_google_access = false     
+  private_ip_google_access = false     
   network       = google_compute_network.test_vpc.id
 }
 
