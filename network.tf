@@ -14,16 +14,22 @@ resource "google_compute_subnetwork" "test_subnet" {
   region        = "us-east4"
   private_ip_google_access = false     
   network       = google_compute_network.test_vpc.id
-}
 
-# Firewall rule
-resource "google_compute_firewall" "test_fwr" {
-  name    = "test-firewall"
-  network = google_compute_network.test_vpc.name
-
-  source_ranges = ["0.0.0.0/0"]
-
-  allow {
-    protocol = "all"
+  log_config {
+    aggregation_interval = "INTERVAL_10_MIN"
+    flow_sampling        = 0.5 
+    metadata             = "INCLUDE_ALL_METADATA"
   }
 }
+
+# # Firewall rule
+# resource "google_compute_firewall" "test_fwr" {
+#   name    = "test-firewall"
+#   network = google_compute_network.test_vpc.name
+
+#   source_ranges = ["0.0.0.0/0"]
+
+#   allow {
+#     protocol = "all"
+#   }
+# }
