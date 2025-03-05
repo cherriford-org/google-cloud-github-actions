@@ -16,50 +16,14 @@ resource "google_compute_subnetwork" "test_subnet" {
   network       = google_compute_network.test_vpc.id
 }
 
-resource "google_compute_instance" "default" {
-  name         = "my-instance"
-  project      = var.project_id
-  machine_type = "n2d-standard-2"
-  zone         = "us-east4-a"
+# Firewall rule
+resource "google_compute_firewall" "test_fwr" {
+  name    = "test-firewall"
+  network = google_compute_network.test_vpc.name
 
-  tags = ["foo", "bar"]
+  source_ranges = ["0.0.0.0/0"]
 
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-11"
-      labels = {
-        my_label = "value"
-      }
-    }
+  allow {
+    protocol = "all"
   }
-
-  confidential_instance_config {
-    enable_confidential_compute = false
-  }
-
-  // Local SSD disk
-  scratch_disk {
-    interface = "NVME"
-  }
-
-  network_interface {
-    network = "default"
-
-    access_config {
-      // Ephemeral public IP
-    }
-  }
-
-  metadata = {
-    foo                        = "bar"
-    serial-port-logging-enable = "TRUE"
-    enable-oslogin             = "FALSE"
-  }
-
-
-  # service_account {
-  #   # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-  #   email  = google_service_account.default.email
-  #   scopes = ["cloud-platform"]
-  # }
 }
