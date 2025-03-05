@@ -22,12 +22,65 @@ jobs:
           create_credentials_file: true
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER_ID }}
           service_account: ${{ secrets.GCP_WORKLOAD_IDENTITY_SA_EMAIL }}
+
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v3
+
       - name: "Terraform Init"
         run: terraform init
-      - name: "Terraform Plan"
-        run: terraform plan -out=plan.tfplan -input=false -lock-timeout=10m
-      - name: "Terraform Apply"
-        if: github.event_name == 'push'
-        run: terraform apply -input=false -lock-timeout=10m plan.tfplan
+        
+      - name: Create Terraform Plan
+        run: terraform plan -out=mainplan.tfplan
+        id: plan    
+
+      - name: Convert Terraform Plan to JSON
+        id: convert
+        run: terraform show -no-color -json mainplan.tfplan > mainplan.json
+
+      - id: 'analyze-code-security-scc'
+        uses: 'google-github-actions/analyze-code-security-scc@v0'
+        with:
+          organization_id: ${{ vars.ORGANIZATION_ID }}
+          scan_file_ref: './mainplan.json'
+          iac_type: 'terraform'
+          scan_timeout: '1m'
+          ignore_violations: true
+          failure_criteria: 'High:1,Medium:1,Low:1,Operator:or'
+          fail_silently: false
+
+      - name: Summarize Counts and Output Results
+        id: summarize-vulnerabilities
+        run: |
+          echo 'The result of the terraform code scan was "${{ steps.analyze-code-security-scc.outputs.iac_scan_result }}"'
+          SARIF_PATH="${{ steps.analyze-code-security-scc.outputs.iac_scan_result_sarif_path }}"
+          if [[ -z "$SARIF_PATH" || ! -f "$SARIF_PATH" ]]; then
+            echo "No SARIF file found or path is empty. Skipping vulnerability summary."
+            exit 0
+          fi
+
+          # jq command to extract and count vulnerabilities by severity
+          SUMMARY=$(cat "$SARIF_PATH" | jq -r '
+            .runs[0].tool.driver.rules | group_by(.properties.severity) | map({(.[] | .properties.severity):length}) | add
+          ')
+
+          if [[ -z "$SUMMARY" ]]; then
+            echo "No vulnerabilities found"
+            exit 0
+          fi
+
+          # Extract counts for each severity level, default to 0 if not present
+          HIGH=$(echo "$SUMMARY" | jq -r '.HIGH // 0')
+          MEDIUM=$(echo "$SUMMARY" | jq -r '.MEDIUM // 0')
+          LOW=$(echo "$SUMMARY" | jq -r '.LOW // 0')
+
+          # Format the output string
+          SUMMARY_STRING="HIGH: $HIGH, MEDIUM: $MEDIUM, LOW: $LOW"
+          echo $SUMMARY_STRING
+          cat "$SARIF_PATH" | jq -r 
+
+      - if: |-
+          ${{ !cancelled() && steps.analyze-code-security-scc.outputs.iac_scan_result_sarif_path != '' }}
+        uses: 'actions/upload-artifact@v4'
+        with:
+          name: 'sarif'
+          path: '${{ steps.analyze-code-security-scc.outputs.iac_scan_result_sarif_path }}'
