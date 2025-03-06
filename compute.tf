@@ -56,7 +56,7 @@ resource "google_compute_instance" "default" {
   }
 }
 
-# Image IAM policy
+# Image IAM policy 
 resource "google_compute_image_iam_member" "member" {
   project = var.project_id
   image = "default"
