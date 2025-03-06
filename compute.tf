@@ -1,5 +1,4 @@
 # VM Creation
-
 resource "google_compute_instance" "default" {
   name         = "my-instance"
   project      = var.project_id
@@ -33,7 +32,7 @@ resource "google_compute_instance" "default" {
   }
 
   network_interface {
-    network = "default"
+    subnetwork = google_compute_subnetwork.test_subnet.self_link
 
     access_config {
       // Ephemeral public IP
@@ -49,5 +48,9 @@ resource "google_compute_instance" "default" {
     foo                        = "bar"
     serial-port-logging-enable = "TRUE"
     enable-oslogin             = "FALSE"
+    serial-port-enable         = "TRUE"
   }
 }
+
+# Image Creation
+
