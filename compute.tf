@@ -52,6 +52,7 @@ resource "google_compute_instance" "default" {
     serial-port-logging-enable = "TRUE"
     enable-oslogin             = "FALSE"
     serial-port-enable         = "TRUE"
+    enforce_customer_supplied_disk_encryption_keys = "TRUE"
   }
 }
 
