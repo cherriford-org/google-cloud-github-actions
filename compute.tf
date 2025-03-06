@@ -21,6 +21,8 @@ resource "google_compute_instance" "default" {
 
   shielded_instance_config {
     enable_secure_boot = false
+    enable_integrity_monitoring = false
+    enable_vtpm = false
   }
 
   # confidential_instance_config {
