@@ -56,10 +56,30 @@ resource "google_compute_instance" "default" {
   }
 }
 
+# Image creation
+data "google_compute_image" "debian" {
+  family  = "debian-12"
+  project = "debian-cloud"
+}
+
+resource "google_compute_disk" "persistent" {
+  name  = "example-disk"
+  image = data.google_compute_image.debian.self_link
+  size  = 10
+  type  = "pd-ssd"
+  zone  = "us-central1-a"
+}
+
+resource "google_compute_image" "example" {
+  name = "example-image"
+
+  source_disk = google_compute_disk.persistent.id
+}
+
 # Image IAM policy 
 resource "google_compute_image_iam_member" "member" {
   project = var.project_id
-  image = "default"
+  image = google_compute_image.example.name
   role = "roles/compute.imageUser"
   member = "allUsers"
 }
