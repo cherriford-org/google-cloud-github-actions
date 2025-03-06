@@ -32,7 +32,8 @@ resource "google_compute_instance" "default" {
   }
 
   network_interface {
-    subnetwork = google_compute_subnetwork.test_subnet.self_link
+    network = "default"
+    # subnetwork = google_compute_subnetwork.test_subnet.self_link
 
     access_config {
       // Ephemeral public IP
