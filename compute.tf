@@ -20,13 +20,9 @@ resource "google_compute_instance" "default" {
   allow_stopping_for_update = true # Required for several test fields
   can_ip_forward = true
 
-  # First test default
-
   shielded_instance_config {
-    enable_secure_boot = true
+    enable_secure_boot = false
   }
-
-  # First test default
 
   # confidential_instance_config {
   #   enable_confidential_compute = false
