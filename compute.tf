@@ -79,7 +79,7 @@
 # Image IAM policy 
 resource "google_compute_image_iam_member" "member" {
   project = var.project_id
-  image = google_compute_image.example.name
+  image = "default"
   role = "roles/compute.imageUser"
   member = "allUsers"
 }
