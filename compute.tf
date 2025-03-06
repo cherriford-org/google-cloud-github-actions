@@ -46,7 +46,7 @@ resource "google_compute_instance" "default" {
 
   # Defaults to the default service account if omitting email
   service_account {
-    scopes = "cloud-platform" # FULL_API_ACCESS
+    scopes = ["cloud-platform"] # FULL_API_ACCESS
   }
 
   metadata = {
