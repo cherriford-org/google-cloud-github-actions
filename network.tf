@@ -22,17 +22,17 @@ resource "google_compute_subnetwork" "test_subnet" {
   }
 }
 
-# # Firewall rule
-# resource "google_compute_firewall" "test_fwr" {
-#   name    = "test-firewall"
-#   network = google_compute_network.test_vpc.name
+# Firewall rule
+resource "google_compute_firewall" "test_fwr" {
+  name    = "test-firewall"
+  network = google_compute_network.test_vpc.name
 
-#   source_ranges = ["0.0.0.0/0"]
+  source_ranges = ["0.0.0.0/0"]
 
-#   allow {
-#     protocol = "all"
-#   }
-# }
+  allow {
+    protocol = "all"
+  }
+}
 
 # Load Balancer
 resource "google_compute_target_http_proxy" "http_proxy" {
